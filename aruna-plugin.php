@@ -26,6 +26,7 @@ Text Domain: aruna-plugin
 //     exit;
 // }
 
+if( class_exists( 'ArunaPlugin' ) ){
 class ArunaPlugin
 {
 
@@ -39,26 +40,10 @@ class ArunaPlugin
     //can be access only within the class itself
 
 
-    function __construct(){
-        add_action('init', array($this,'custom_post_type'));
-
-    }
-
     function register(){
         add_action('admin_enqueue_scripts', array($this, 'enqueue'));
     }
 
-    function activate(){
-        //generated a CPT
-        $this->custom_post_type();
-        //flush rewright rule
-        flush_rewrite_rules();
-    }
-    
-    function deactivate(){
-        //flush rewright rule
-        flush_rewrite_rules();
-    }
 
 
     function custom_post_type(){
@@ -70,20 +55,25 @@ class ArunaPlugin
         wp_enqueue_style('mypluginstyle', plugins_url('/assets/mystyle.css', __FILE__));
         wp_enqueue_script('mypluginscript', plugins_url('/assets/myscript.js', __FILE__));
     }
+    function activate(){
+        require_once plugin_dir_path(__FILE__) . 'inc/aruna-plugin-activate.php';
+        ArunaPluginActivate::activate();
+    }
 
 }
 
-if( class_exists( 'ArunaPlugin' ) ){
+
     $arunaPlugin = new ArunaPlugin( );
     $arunaPlugin->register();
+    
+    
+    //activation
+    register_activation_hook(__FILE__, array('ArunaPluginActivate', 'activate'));
+    
+    //deactivetion
+    require_once plugin_dir_path(__FILE__) . 'inc/aruna-plugin-deactivate.php';
+    register_deactivation_hook(__FILE__, array('ArunaPluginDeactivate', 'deactivate'));
+    
+    //uinstall
+    register_uninstall_hook(__FILE__, array($arunaPlugin, 'uninstall'));
 }
-
-
-//activation
-register_activation_hook(__FILE__, array($arunaPlugin, 'activate'));
-
-//deactivetion
-register_deactivation_hook(__FILE__, array($arunaPlugin, 'deactivate'));
-
-//uinstall
-register_uninstall_hook(__FILE__, array($arunaPlugin, 'uninstall'));
