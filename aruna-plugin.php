@@ -26,6 +26,7 @@ Text Domain: aruna-plugin
 //     exit;
 // }
 
+if( class_exists( 'ArunaPlugin' ) ){
 class ArunaPlugin
 {
 
@@ -39,26 +40,38 @@ class ArunaPlugin
     //can be access only within the class itself
 
 
+    public $plugin;
+
     function __construct(){
-        add_action('init', array($this,'custom_post_type'));
-
+        $this->plugin = plugin_basename(__FILE__);
     }
-
     function register(){
+
         add_action('admin_enqueue_scripts', array($this, 'enqueue'));
+
+        add_action('admin_menu', array($this, 'add_admin_pages'));
+
+        add_filter("plugin_action_links_$this->plugin", array($this, 'settings_link'));
     }
 
-    function activate(){
-        //generated a CPT
-        $this->custom_post_type();
-        //flush rewright rule
-        flush_rewrite_rules();
+    public function settings_link($links){
+        //add custom settings link
+        $settings_link = '<a href="options-general.php?page=aruna_plugin">Settings</a>';
+        array_push($links, $settings_link);
+        return $links;
+
     }
-    
-    function deactivate(){
-        //flush rewright rule
-        flush_rewrite_rules();
+
+    public function add_admin_pages(){
+        add_menu_page('Aruna Plugin', 'Aruna', 'manage_options', 'aruna-plugin', array($this, 'admin_index'), 'dashicons-store', 110);
     }
+
+    public function admin_index(){
+        //require templte
+        require_once plugin_dir_path(__FILE__) . 'templates/admin.php';
+
+    }
+
 
 
     function custom_post_type(){
@@ -70,20 +83,25 @@ class ArunaPlugin
         wp_enqueue_style('mypluginstyle', plugins_url('/assets/mystyle.css', __FILE__));
         wp_enqueue_script('mypluginscript', plugins_url('/assets/myscript.js', __FILE__));
     }
+    function activate(){
+        require_once plugin_dir_path(__FILE__) . 'inc/aruna-plugin-activate.php';
+        ArunaPluginActivate::activate();
+    }
 
 }
 
-if( class_exists( 'ArunaPlugin' ) ){
+
     $arunaPlugin = new ArunaPlugin( );
     $arunaPlugin->register();
+    
+    
+    //activation
+    register_activation_hook(__FILE__, array('ArunaPluginActivate', 'activate'));
+    
+    //deactivetion
+    require_once plugin_dir_path(__FILE__) . 'inc/aruna-plugin-deactivate.php';
+    register_deactivation_hook(__FILE__, array('ArunaPluginDeactivate', 'deactivate'));
+    
+    //uinstall
+    register_uninstall_hook(__FILE__, array($arunaPlugin, 'uninstall'));
 }
-
-
-//activation
-register_activation_hook(__FILE__, array($arunaPlugin, 'activate'));
-
-//deactivetion
-register_deactivation_hook(__FILE__, array($arunaPlugin, 'deactivate'));
-
-//uinstall
-register_uninstall_hook(__FILE__, array($arunaPlugin, 'uninstall'));
