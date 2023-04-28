@@ -1,0 +1,17 @@
+{
+    "name": "aruna/aruna-plugin",
+    "description": "Starter pluging example",
+    "type": "project",
+    "license": "GPL",
+    "authors": [
+        {
+            "name": "ArunaAP",
+            "email": "it20657796@my.sliit.lk"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {},
+    "autoload": {
+        "psr-4": {"Inc\\": "./inc"}
+    }
+}
